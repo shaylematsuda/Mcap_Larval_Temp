@@ -5,8 +5,6 @@
 ####SET UP####
 rm(list=ls(all=TRUE)) 
 
-setwd("~/Google Drive/Gyasi_Shayle_Ariana_Summer2019/R/FINAL") 
-
 library("ggplot2") #plotting
 library("car") #levenes tests
 library("dplyr")
@@ -52,6 +50,7 @@ larvae_surv_table <- plyr::ddply(z, c("Treatment", "Day"), summarise,
                  upper = mean+se 
 )
 larvae_surv_table 
+#write.csv(larvae_surv_table,"larvae_surv_table.csv")
 
 #graph larval density over time
 LarvalSurvPlot<-ggplot(data=larvae_surv_table, aes(x=Day, y=mean, colour=Treatment)) + 
@@ -116,6 +115,7 @@ larval_settle_table <- plyr::ddply(total_settle, c("Treatment", "Day"), summaris
                  upper = mean+se 
 )
 larval_settle_table 
+#write.csv(larval_settle_table, "larval_settle_table.csv")
 
 #graph larval settlement over time (days 1, 2, 3, 5, 6, 7) originating from each larval treatment (ambient, cool, high)
 LarvalSettlePlot<-ggplot(data=larval_settle_table, aes(x=Day, y=mean, colour=Treatment)) + 
@@ -140,6 +140,7 @@ LarvalSettlePlot<-ggplot(data=larval_settle_table, aes(x=Day, y=mean, colour=Tre
 
 
 #analyze "total" settlement over time between treatments with a linear mixed model. As all chambers started with 100 larvae, we are not using the vector of success and failure. Because this is count data we will use a poisson distribution. Nest chamber within tank as this is repeated measures. 
+hist(total_settle$total)
 model2<-glmer(total ~ Treatment + Day  + Treatment:Day + (1|Tank/Chamber), data=total_settle, family=poisson) 
 summary(model2) 
 Anova(model2, type=2)
@@ -174,6 +175,7 @@ recruit_surv_table <- plyr::ddply(recruits, c("Days", "Juv.Treatment", "Larval.T
                            lower = mean-se, 
                            upper = mean+se 
 );recruit_surv_table 
+#write.csv(recruit_surv_table,"recruit_surv_table.csv")
 
 #graph proportion survival over time in recruits 
 RecruitSurvPlot<-ggplot(data=recruit_surv_table, aes(x=Days, y=mean, colour=Larval.Treatment)) + 

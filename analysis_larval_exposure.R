@@ -2,6 +2,7 @@
 #Gyasi, Shayle, Ariana 
 #2019
 
+TEST
 ####SET UP####
 rm(list=ls(all=TRUE)) 
 

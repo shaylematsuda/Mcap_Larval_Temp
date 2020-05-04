@@ -1,10 +1,10 @@
 #Project: Larval thermal exposure
 #Gyasi, Shayle, Ariana 
-#2019
+#2019-2020
 
-TEST
+
 ####SET UP####
-rm(list=ls(all=TRUE)) 
+rm(list=ls(all=TRUE)) #clear lists
 
 library("ggplot2") #plotting
 library("car") #levenes tests

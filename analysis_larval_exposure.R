@@ -43,8 +43,8 @@ z <- larvae_sum %>%
 #generate a summary table of larval density over time (days 0, 1, 3, 4) in ambient, cool, and high treatments
 larvae_surv_table <- plyr::ddply(z, c("Treatment", "Day"), summarise, 
                  N    = length(prop_change[!is.na(prop_change)]), 
-                 mean = mean(prop_change, na.rm=TRUE), 
-                 sd   = sd(prop_change, na.rm=TRUE), 
+                 mean = mean(prop_change, na.rm=TRUE) * 100, 
+                 sd   = sd(prop_change, na.rm=TRUE) * 100, 
                  se   = sd / sqrt(N), 
                  max = max(prop_change, na.rm=TRUE), 
                  lower = mean-se, 
@@ -63,7 +63,7 @@ LarvalSurvPlot<-ggplot(data=larvae_surv_table, aes(x=Day, y=mean, colour=Treatme
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), 
                 width=0.0, size=1, position=position_dodge(0.1), linetype=1)+ 
   theme_classic()+ 
-  ylim(0,1.3)+
+  ylim(0,135)+
   theme(text = element_text(size = 18, color="black"))+ 
   theme(axis.text = element_text(size = 18, color="black"))+ 
   theme(legend.title = element_text(size = 18, color="black", face="bold"))+
@@ -71,14 +71,16 @@ LarvalSurvPlot<-ggplot(data=larvae_surv_table, aes(x=Day, y=mean, colour=Treatme
   theme(axis.title = element_text(size = 18, color="black"))+ 
   theme(legend.position = "none")+ 
   theme(plot.margin = margin(1, 0.1, 0, 0.1, "cm")) +
-  ylab(expression(bold(paste("Proportion Survival")))) + 
+  ylab(expression(bold(paste("Larval Survival (%)")))) + 
   xlab(expression(bold("Days")));LarvalSurvPlot 
 
 #analyze larval density over time between treatments with a linear mixed model
-model1<-aov(prop_change~Treatment + Day  + Treatment:Day, data=z) 
-summary(model1) 
+model1<-lmer(prop_change~Treatment + Day  + Treatment:Day + (1|Treatment:Conical), data=z) 
+summary(model1)
+anova(model1, type="II")
+hist(residuals(model1)) #passes
 qqPlot(residuals(model1)) #passes
-leveneTest(prop_change~Treatment, data=z) #passes
+leveneTest(residuals(model1)~Treatment * as.factor(Day), data=z) #passes
 
 #Overall, there are significant effects of treatment and day and interaction of treatment by day. 
 #1. There is a significant reduction in survivorship over time (sign. effect of day). 
@@ -142,10 +144,12 @@ LarvalSettlePlot<-ggplot(data=larval_settle_table, aes(x=Day, y=mean, colour=Tre
 
 #analyze "total" settlement over time between treatments with a linear mixed model. As all chambers started with 100 larvae, we are not using the vector of success and failure. Because this is count data we will use a poisson distribution. Nest chamber within tank as this is repeated measures. 
 hist(total_settle$total)
+
 model2<-glmer(total ~ Treatment + Day  + Treatment:Day + (1|Tank/Chamber), data=total_settle, family=poisson) 
 summary(model2) 
 Anova(model2, type=2)
 qqPlot(residuals(model2)) 
+hist(residuals(model2)) 
 
 #Overall, there is a significant effect of day and treatment on settlement. 
 #1. There is lower settlement in cool temp compared to ambient and higher settlement in high as compared to ambient (sign. effect of treatment) - basically settlement increases with temp
@@ -189,7 +193,7 @@ RecruitSurvPlot<-ggplot(data=recruit_surv_table, aes(x=Days, y=mean, colour=Larv
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), 
                 width=0.0, size=1, position=position_dodge(0.1), linetype=1)+ 
   theme_classic()+ 
-  ylim(0,100)+
+  ylim(40,100)+
   theme(text = element_text(size = 18, color="black"))+ 
   theme(axis.text = element_text(size = 18, color="black"))+ 
   theme(legend.title = element_text(size = 18, color="black", face="bold"))+
@@ -221,7 +225,7 @@ detach(recruits)
 
 ####GENERATE FIGURES#### 
 
-#generate figure with larval survival, settlement, and recruit survival in one panel
+#generate figure with larval survival, settlement, and recruit survival in one panel 
 
 figure2a<-plot_grid(LarvalSurvPlot, LarvalSettlePlot, labels = c("A", "B"), ncol=2, nrow=1, rel_heights= c(1,1), rel_widths = c(1,1), label_size = 20, label_y=1, align="h");figure2a
 

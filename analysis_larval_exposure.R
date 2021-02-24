@@ -58,10 +58,10 @@ LarvalSurvPlot<-ggplot(data=larvae_surv_table, aes(x=Day, y=mean, colour=Treatme
   scale_colour_manual(name="Larval Treatment",
                     values=c("gray", "blue", "red"),
                     labels=c("Ambient", "Cool", "High"))+
-  geom_line(position=position_dodge(0.1), size=1) + 
-  geom_point(size=1, position=position_dodge(0.1)) + 
+  geom_line(position=position_dodge(0.2), size=1) + 
+  geom_point(size=3, position=position_dodge(0.2)) + 
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), 
-                width=0.0, size=1, position=position_dodge(0.1), linetype=1)+ 
+                width=0.0, size=1, position=position_dodge(0.2), linetype=1)+ 
   theme_classic()+ 
   ylim(0,135)+
   theme(text = element_text(size = 18, color="black"))+ 
@@ -72,15 +72,21 @@ LarvalSurvPlot<-ggplot(data=larvae_surv_table, aes(x=Day, y=mean, colour=Treatme
   theme(legend.position = "none")+ 
   theme(plot.margin = margin(1, 0.1, 0, 0.1, "cm")) +
   ylab(expression(bold(paste("Larval Survival (%)")))) + 
+  geom_text(x=1.5, y=10, label="p(Larval Treatment x Day)=0.007", size=5, color="black") +
+  geom_text(x=3.95, y=83, label="*", size=10, color="blue") + #day4 cool
   xlab(expression(bold("Days")));LarvalSurvPlot 
 
 #analyze larval density over time between treatments with a linear mixed model
+z$Day<-as.factor(as.character(z$Day))
 model1<-lmer(prop_change~Treatment + Day  + Treatment:Day + (1|Treatment:Conical), data=z) 
 summary(model1)
 anova(model1, type="II")
 hist(residuals(model1)) #passes
 qqPlot(residuals(model1)) #passes
 leveneTest(residuals(model1)~Treatment * as.factor(Day), data=z) #passes
+posthoc1<-emmeans(model1, ~Treatment|Day, adjust="Tukey")
+cld(posthoc1)
+pairs(posthoc1)
 
 #Overall, there are significant effects of treatment and day and interaction of treatment by day. 
 #1. There is a significant reduction in survivorship over time (sign. effect of day). 
@@ -125,10 +131,10 @@ LarvalSettlePlot<-ggplot(data=larval_settle_table, aes(x=Day, y=mean, colour=Tre
   scale_colour_manual(name="Larval Treatment",
                        values=c("gray", "blue", "red"), 
                        labels=c("Ambient", "Cool", "High"))+ 
-  geom_line(position=position_dodge(0.1), size=1) + 
-  geom_point(size=1, position=position_dodge(0.1)) + 
+  geom_line(position=position_dodge(0.2), size=1) + 
+  geom_point(size=3, position=position_dodge(0.2)) + 
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), 
-                width=0.0, size=1, position=position_dodge(0.1), linetype=1)+ 
+                width=0.0, size=1, position=position_dodge(0.2), linetype=1)+ 
   theme_classic()+ 
   ylim(0,100)+
   theme(text = element_text(size = 18, color="black"))+ 
@@ -139,17 +145,27 @@ LarvalSettlePlot<-ggplot(data=larval_settle_table, aes(x=Day, y=mean, colour=Tre
   theme(axis.title = element_text(size = 18, color="black"))+ 
   theme(plot.margin = margin(1, 0.1, 0, 0.1, "cm")) +
   ylab(expression(bold(paste("Larvae Settled (%)")))) + 
+  geom_text(x=4, y=75, label="p(Larval Treatment x Day)<0.001", size=5, color="black") +
+  geom_text(x=1.05, y=27, label="**", size=10, color="red") + #day1 high
+  geom_text(x=1.05, y=23, label="*", size=10, color="blue") + #day1 cool
+  geom_text(x=2.05, y=20, label="**", size=10, color="red") + #day2 high
+  geom_text(x=3.05, y=29, label="**", size=10, color="red") + #day3 high
+  geom_text(x=3.05, y=25, label="**", size=10, color="blue") + #day3 cool
+  geom_text(x=6.05, y=30, label="**", size=10, color="red") + #day6 high
   xlab(expression(bold("Days"))); LarvalSettlePlot 
 
 
 #analyze "total" settlement over time between treatments with a linear mixed model. As all chambers started with 100 larvae, we are not using the vector of success and failure. Because this is count data we will use a poisson distribution. Nest chamber within tank as this is repeated measures. 
 hist(total_settle$total)
-
+total_settle$Day<-as.factor(as.character(total_settle$Day))
 model2<-glmer(total ~ Treatment + Day  + Treatment:Day + (1|Tank/Chamber), data=total_settle, family=poisson) 
 summary(model2) 
 Anova(model2, type=2)
 qqPlot(residuals(model2)) 
 hist(residuals(model2)) 
+posthoc2<-emmeans(model2, ~Treatment|Day, adjust="Tukey")
+cld(posthoc2)
+pairs(posthoc2)
 
 #Overall, there is a significant effect of day and treatment on settlement. 
 #1. There is lower settlement in cool temp compared to ambient and higher settlement in high as compared to ambient (sign. effect of treatment) - basically settlement increases with temp
@@ -183,17 +199,20 @@ recruit_surv_table <- plyr::ddply(recruits, c("Days", "Juv.Treatment", "Larval.T
 #write.csv(recruit_surv_table,"recruit_surv_table.csv")
 
 #graph proportion survival over time in recruits 
-RecruitSurvPlot<-ggplot(data=recruit_surv_table, aes(x=Days, y=mean, colour=Larval.Treatment)) + 
-  facet_wrap(~Juv.Treatment)+
+RecruitSurvPlot<-ggplot(data=recruit_surv_table, aes(x=Days, y=mean, shape=Juv.Treatment, linetype=Juv.Treatment, colour=Larval.Treatment, group=interaction(Juv.Treatment, Larval.Treatment))) + 
+  #facet_wrap(~Juv.Treatment)+
   scale_colour_manual(name="Larval Treatment",
                       values=c("gray", "blue", "red"),
                       labels=c("Ambient", "Cool", "High"))+
-  geom_line(position=position_dodge(0.1), size=1) + 
-  geom_point(size=1, position=position_dodge(0.1)) + 
+  geom_line(position=position_dodge(0.3), size=1) + 
+  geom_point(size=5, position=position_dodge(0.5), show.legend=FALSE) + 
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), 
-                width=0.0, size=1, position=position_dodge(0.1), linetype=1)+ 
+                width=0.0, size=1, position=position_dodge(0.5), linetype=1)+ 
+  scale_linetype_manual(name="Juvenile Treatment", values=c("solid", "dotted"))+
+  scale_shape_manual(name="Juvenile Treatment", values=c(19,21))+ #change this to not include in the legend
   theme_classic()+ 
-  ylim(40,100)+
+  ylim(0,100)+
+  xlim(0,50)+
   theme(text = element_text(size = 18, color="black"))+ 
   theme(axis.text = element_text(size = 18, color="black"))+ 
   theme(legend.title = element_text(size = 18, color="black", face="bold"))+
@@ -202,8 +221,12 @@ RecruitSurvPlot<-ggplot(data=recruit_surv_table, aes(x=Days, y=mean, colour=Larv
   theme(legend.position = "bottom")+ 
   ylab(expression(bold(paste("Recruit Survivorship (%)")))) + 
   theme(plot.margin = margin(1, 0.1, 0, 0.1, "cm")) +
-  xlab(expression(bold("Days")));RecruitSurvPlot 
+  geom_text(x=28, y=100, label="**", size=10, color="black") +
+  geom_text(x=47, y=93, label="**", size=10, color="black") +
+  geom_text(x=25, y=25, label="p(Juvenile Treatment x Day)<0.001", size=4, color="black") +
+  xlab(expression(bold("Days Exposure")));RecruitSurvPlot 
 
+recruits$Days<-as.factor(as.character(recruits$Days))
 #analyze recruit survival over time between treatments with a binomial mixed model with a success and failure vector
 attach(recruits)
 
@@ -212,6 +235,14 @@ y<-cbind(Success, Failure)
 model3<-glmer(y~Juv.Treatment * Larval.Treatment * Days + (1|Tank/Plug.ID), family=binomial, data=recruits) 
 summary(model3) 
 Anova(model3, type=2)
+posthoc3<-emmeans(model3, ~Juv.Treatment|Days, adjust="Tukey")
+cld(posthoc3)
+pairs(posthoc3)
+
+#significantly different b/t high and ambient at day 28 and day 47
+
+library(emmeans); library(multcomp)
+
 
 library(blmeco);dispersion_glmer(model3) #no evidence of overdispersion as value is <1.4
 

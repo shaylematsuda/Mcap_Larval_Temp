@@ -34,6 +34,9 @@ larvae_sum<- plyr::ddply(larvae, c("Conical", "Day", "Treatment"), summarise,
                            mean = mean(perML, na.rm=TRUE))
 larvae_sum
 
+larvae_sum<-larvae_sum%>%
+  filter(., !Day=="2")
+
 #Calculate proportion survival
 z <- larvae_sum %>%
   group_by(Conical) %>% #group by conical

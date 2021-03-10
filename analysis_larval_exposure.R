@@ -151,7 +151,8 @@ LarvalSettlePlot<-ggplot(data=larval_settle_table, aes(x=Day, y=mean, colour=Tre
   geom_text(x=4, y=75, label="p(Larval Treatment x Day)<0.001", size=5, color="black") +
   geom_text(x=1.05, y=27, label="**", size=10, color="red") + #day1 high
   geom_text(x=1.05, y=23, label="*", size=10, color="blue") + #day1 cool
-  geom_text(x=2.05, y=20, label="**", size=10, color="red") + #day2 high
+  geom_text(x=2.05, y=22, label="**", size=10, color="red") + #day2 high
+  geom_text(x=2.05, y=19, label="*", size=10, color="blue") + #day2 high
   geom_text(x=3.05, y=29, label="**", size=10, color="red") + #day3 high
   geom_text(x=3.05, y=25, label="**", size=10, color="blue") + #day3 cool
   geom_text(x=6.05, y=30, label="**", size=10, color="red") + #day6 high

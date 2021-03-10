@@ -75,7 +75,7 @@ LarvalSurvPlot<-ggplot(data=larvae_surv_table, aes(x=Day, y=mean, colour=Treatme
   theme(legend.position = "none")+ 
   theme(plot.margin = margin(1, 0.1, 0, 0.1, "cm")) +
   ylab(expression(bold(paste("Larval Survival (%)")))) + 
-  geom_text(x=1.5, y=10, label="p(Larval Treatment x Day)=0.007", size=5, color="black") +
+  geom_text(x=1.5, y=10, label="p(Larval Treatment x Day)=0.009", size=5, color="black") +
   geom_text(x=3.95, y=83, label="*", size=10, color="blue") + #day4 cool
   xlab(expression(bold("Days")));LarvalSurvPlot 
 

@@ -93,7 +93,7 @@ SUMP_plot<-ggplot(data=SUMP_mean, aes(x=Date, y=mean, group = variable, color=va
 
 Cold and ambient temperature sumps were distinct temperature regimes.  
 
-Plot temperature data from loggers in conicals and view averages of each treatment (Script from Hancock et al. 2021).  
+Plot temperature data from loggers in conicals and view averages of each treatment (Script and data from Hancock et al. 2021).  
 
 ```{r}
 library(readxl);library(tidyverse);library(lubridate);library(scales);library(plotrix)
@@ -203,6 +203,7 @@ survival_temps<-Tankdf%>%
                                Tank=="Tank3" ~ "Ambient", 
                                Tank=="Tank4" ~ "Hot"))
 ```
+
 
 ## Larval settlement  
 

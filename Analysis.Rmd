@@ -1,7 +1,7 @@
 ---
 title: "Larval and Recruit Resopnses"
 author: "Ariana S Huffmyer"
-date: "4/21/2021"
+date: "6/24/2021"
 output: html_document
 editor_options: 
   chunk_output_type: console
@@ -24,6 +24,7 @@ library("lme4") #linear mixed modeling
 library("lmerTest") #calculate p-values in models
 library("emmeans") #post-hoc tests
 library("cowplot") #arrange plots
+library("multcomp") #arrange plots
 ```
 
 # Larval survivorship  
@@ -76,8 +77,8 @@ Plot larval survival.
 #graph larval density over time
 LarvalSurvPlot<-ggplot(data=larvae_surv_table, aes(x=Day, y=mean, colour=Treatment)) + 
   scale_colour_manual(name="Larval Treatment",
-                    values=c("gray", "blue", "red"),
-                    labels=c("Ambient", "Cold", "Hot"))+
+                    values=c("lightblue", "darkblue", "red"),
+                    labels=c("Ambient", "Cool", "Warm"))+
   geom_line(position=position_dodge(0.2), size=1) + 
   geom_point(size=3, position=position_dodge(0.2)) + 
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), 
@@ -92,8 +93,8 @@ LarvalSurvPlot<-ggplot(data=larvae_surv_table, aes(x=Day, y=mean, colour=Treatme
   theme(legend.position = "none")+ 
   theme(plot.margin = margin(1, 0.1, 0, 0.1, "cm")) +
   ylab(expression(bold(paste("Larval Survival (%)")))) + 
-  geom_text(x=1.5, y=10, label="p(Larval Treatment x Day)=0.009", size=5, color="black") +
-  geom_text(x=3.95, y=83, label="*", size=10, color="blue") + #day4 cool
+  geom_text(x=1.5, y=10, label="p(Larval Treatment x Day)=0.009", size=6, color="black") +
+  geom_text(x=3.95, y=83, label="*", size=10, color="darkblue") + #day4 cool
   xlab(expression(bold("Days")));LarvalSurvPlot 
 ```
 
@@ -162,8 +163,8 @@ Plot larval settlement rates.
 #graph larval settlement over time (days 1, 2, 3, 5, 6, 7) originating from each larval treatment (ambient, cool, high)
 LarvalSettlePlot<-ggplot(data=larval_settle_table, aes(x=Day, y=mean, colour=Treatment)) + 
   scale_colour_manual(name="Larval Treatment",
-                       values=c("gray", "blue", "red"), 
-                       labels=c("Ambient", "Cold", "Hot"))+ 
+                       values=c("lightblue", "darkblue", "red"), 
+                       labels=c("Ambient", "Cool", "Warm"))+ 
   geom_line(position=position_dodge(0.2), size=1) + 
   geom_point(size=3, position=position_dodge(0.2)) + 
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), 
@@ -178,13 +179,13 @@ LarvalSettlePlot<-ggplot(data=larval_settle_table, aes(x=Day, y=mean, colour=Tre
   theme(axis.title = element_text(size = 18, color="black"))+ 
   theme(plot.margin = margin(1, 0.1, 0, 0.1, "cm")) +
   ylab(expression(bold(paste("Larvae Settled (%)")))) + 
-  geom_text(x=4, y=75, label="p(Larval Treatment x Day)<0.001", size=5, color="black") +
+  geom_text(x=4, y=75, label="p(Larval Treatment x Day)<0.001", size=6, color="black") +
   geom_text(x=1.05, y=27, label="**", size=10, color="red") + #day1 high
-  geom_text(x=1.05, y=23, label="*", size=10, color="blue") + #day1 cool
+  geom_text(x=1.05, y=23, label="*", size=10, color="darkblue") + #day1 cool
   geom_text(x=2.05, y=22, label="**", size=10, color="red") + #day2 high
-  geom_text(x=2.05, y=19, label="*", size=10, color="blue") + #day2 high
+  geom_text(x=2.05, y=19, label="*", size=10, color="darkblue") + #day2 high
   geom_text(x=3.05, y=29, label="**", size=10, color="red") + #day3 high
-  geom_text(x=3.05, y=25, label="**", size=10, color="blue") + #day3 cool
+  geom_text(x=3.05, y=25, label="**", size=10, color="darkblue") + #day3 cool
   geom_text(x=6.05, y=30, label="**", size=10, color="red") + #day6 high
   xlab(expression(bold("Days"))); LarvalSettlePlot 
 ```
@@ -255,13 +256,13 @@ Graph proportion survival over time in recruits
 RecruitSurvPlot<-ggplot(data=recruit_surv_table, aes(x=Days, y=mean, shape=Juv.Treatment, linetype=Juv.Treatment, colour=Larval.Treatment, group=interaction(Juv.Treatment, Larval.Treatment))) + 
   #facet_wrap(~Juv.Treatment)+
   scale_colour_manual(name="Larval Treatment",
-                      values=c("gray", "blue", "red"),
-                      labels=c("Ambient", "Cold", "Hot"))+
+                      values=c("lightblue", "darkblue", "red"),
+                      labels=c("Ambient", "Cool", "Warm"))+
   geom_line(position=position_dodge(0.3), size=1) + 
   geom_point(size=5, position=position_dodge(0.5), show.legend=FALSE) + 
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), 
                 width=0.0, size=1, position=position_dodge(0.5), linetype=1)+ 
-  scale_linetype_manual(name="Juvenile Treatment", values=c("solid", "dotted"), labels=c("Ambient", "Hot"))+
+  scale_linetype_manual(name="Juvenile Treatment", values=c("solid", "dotted"), labels=c("Ambient", "High"))+
   scale_shape_manual(name="Juvenile Treatment", values=c(19,21))+ #change this to not include in the legend
   theme_classic()+ 
   ylim(0,100)+
@@ -276,7 +277,7 @@ RecruitSurvPlot<-ggplot(data=recruit_surv_table, aes(x=Days, y=mean, shape=Juv.T
   theme(plot.margin = margin(1, 0.1, 0, 0.1, "cm")) +
   geom_text(x=28, y=100, label="**", size=10, color="black") +
   geom_text(x=47, y=93, label="**", size=10, color="black") +
-  geom_text(x=25, y=25, label="p(Juvenile Treatment x Day)<0.001", size=4, color="black") +
+  geom_text(x=25, y=25, label="p(Juvenile Treatment x Day)<0.001", size=6, color="black") +
   xlab(expression(bold("Days Exposure")));RecruitSurvPlot 
 ```
 
@@ -321,6 +322,7 @@ figure2a<-plot_grid(LarvalSurvPlot, LarvalSettlePlot, labels = c("A", "B"), ncol
 figure2b<-plot_grid(figure2a, RecruitSurvPlot, labels = c("", "C"), ncol=1, nrow=2, rel_heights= c(1,1), rel_widths = c(1,1), label_size = 20, label_y=1);figure2b
 
 ggsave(filename="Figures/DataFigure.pdf", plot=figure2b, dpi=500, width=12, height=10, units="in")
+ggsave(filename="Figures/DataFigure.png", plot=figure2b, dpi=500, width=12, height=10, units="in")
 
 ```
 

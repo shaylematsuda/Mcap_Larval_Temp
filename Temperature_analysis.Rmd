@@ -1,7 +1,7 @@
 ---
 title: "Temperature analysis"
 author: "Ariana S Huffmyer"
-date: "4/21/2021"
+date: "6/24/2021"
 output: html_document
 editor_options: 
   chunk_output_type: console
@@ -102,14 +102,14 @@ ambient<-read_excel("Temperature/conicals.xlsx",sheet="Ambient");str(ambient)
 cold<-read_excel("Temperature/conicals.xlsx",sheet="Cold");str(cold)
 
 data<-full_join(full_join(hot,ambient,by="Date"),cold,by="Date")%>%
-     rename(Hot=Temp.x,Ambient=Temp.y)%>%
+     dplyr::rename(Hot=Temp.x,Ambient=Temp.y)%>%
      gather(Treatment,Temp,-Date)%>%
      filter(Date>as.POSIXct("2019-07-06")&Date<as.POSIXct("2019-07-9"))
 data$Treatment <- factor(data$Treatment,levels = c("Cold", "Ambient", "Hot"))
 
 conical_plot<-ggplot(data)+geom_point(aes(Date,Temp,color=Treatment),alpha=0.3,size=1)+
      theme_classic()+
-     scale_color_manual(values=c("Blue","Gray","Red"))+
+     scale_color_manual(values=c("darkblue","lightblue","red"), labels=c("Cool", "Ambient", "Warm"))+
      geom_smooth(aes(Date,Temp,color=Treatment),se=FALSE,span=0.15,size=0.5)+
      scale_x_datetime(date_breaks="1 day",minor_breaks=waiver(),labels=date_format("%m-%d"))+
      #scale_y_continuous(breaks=seq(23,32,1))+
@@ -121,7 +121,7 @@ conical_plot<-ggplot(data)+geom_point(aes(Date,Temp,color=Treatment),alpha=0.3,s
     theme(plot.margin = margin(0.5, 0.1, 0.1, 0.1, "cm"))+
     theme(legend.text=element_text(size=9)); conical_plot
 
-ggsave("Figures/concial_plot.png", plot=conical_plot, w=5, h=3, units="in", dpi=300)
+#ggsave("Figures/concial_plot.png", plot=conical_plot, w=5, h=3, units="in", dpi=300)
 
 data%>%group_by(Treatment)%>%summarise(mean=mean(Temp),sd=sd(Temp),se=std.error(Temp))
 
@@ -198,10 +198,10 @@ settlement_temps$Treatment<-"Ambient"
 survival_temps<-Tankdf%>%
   filter(Phase=="Survival")%>%
   gather(Tank, Temp, Tank1:Tank4)%>%
-  mutate(Treatment = case_when(Tank=="Tank1" ~ "Hot", 
+  mutate(Treatment = case_when(Tank=="Tank1" ~ "High", 
                                Tank=="Tank2" ~ "Ambient", 
                                Tank=="Tank3" ~ "Ambient", 
-                               Tank=="Tank4" ~ "Hot"))
+                               Tank=="Tank4" ~ "High"))
 ```
 
 
@@ -211,7 +211,7 @@ Plot temperatures during larval settlement and calculate mean values.
 ```{r}
 settlement_plot<-ggplot(settlement_temps)+geom_point(aes(as.POSIXct(DateTime),Temp,color=Treatment),alpha=0.3,size=1)+
      theme_classic()+
-     scale_color_manual(values=c("Gray"))+
+     scale_color_manual(values=c("lightblue"))+
      geom_smooth(aes(as.POSIXct(DateTime),Temp,color=Treatment),se=FALSE,span=0.15,size=0.5)+
      scale_x_datetime(date_breaks="4 days",minor_breaks=waiver(),labels=date_format("%m-%d"))+
      #scale_y_continuous(breaks=seq(23,32,1))+
@@ -222,7 +222,7 @@ settlement_plot<-ggplot(settlement_temps)+geom_point(aes(as.POSIXct(DateTime),Te
     theme(plot.margin = margin(0.5, 0.1, 0.1, 0.1, "cm"))+
     theme(legend.position="none"); settlement_plot
 
-ggsave("Figures/settlement_temps.png", plot=settlement_plot, w=5, h=3, units="in", dpi=300)
+#ggsave("Figures/settlement_temps.png", plot=settlement_plot, w=5, h=3, units="in", dpi=300)
 
 settlement_temps%>%group_by(Treatment)%>%summarise(mean=mean(Temp), sd=sd(Temp), se=std.error(Temp))
 
@@ -235,7 +235,7 @@ Plot temperatures during recruit survival and calculate mean values.
 ```{r}
 recruit_plot<-ggplot(survival_temps)+geom_point(aes(as.POSIXct(DateTime),Temp,color=Treatment),alpha=0.3,size=1)+
      theme_classic()+
-     scale_color_manual(values=c("Gray", "Red"))+
+     scale_color_manual(values=c("lightblue", "red"))+
      geom_smooth(aes(as.POSIXct(DateTime),Temp,color=Treatment),se=FALSE,span=0.15,size=0.5)+
      scale_x_datetime(date_breaks="8 days",minor_breaks=waiver(),labels=date_format("%m-%d"))+
      #scale_y_continuous(breaks=seq(23,32,1))+
@@ -246,7 +246,7 @@ recruit_plot<-ggplot(survival_temps)+geom_point(aes(as.POSIXct(DateTime),Temp,co
     theme(plot.margin = margin(0.5, 0.1, 0.1, 0.1, "cm"))+
     theme(legend.position="none"); recruit_plot
 
-ggsave("Figures/recruit_temps.png", plot=recruit_plot, w=5, h=3, units="in", dpi=300)
+#ggsave("Figures/recruit_temps.png", plot=recruit_plot, w=5, h=3, units="in", dpi=300)
 
 survival_temps%>%group_by(Treatment)%>%summarise(mean=mean(Temp), sd=sd(Temp), se=std.error(Temp))
 

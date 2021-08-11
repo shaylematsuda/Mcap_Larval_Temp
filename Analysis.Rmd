@@ -1,5 +1,5 @@
 ---
-title: "Larval and Recruit Resopnses"
+title: "Larval and Recruit Responses"
 author: "Ariana S Huffmyer"
 date: "6/24/2021"
 output: html_document
@@ -317,9 +317,9 @@ Overall, there are significant effects of juvenile treatment and day, but no eff
 ```{r}
 #generate figure with larval survival, settlement, and recruit survival in one panel 
 
-figure2a<-plot_grid(LarvalSurvPlot, LarvalSettlePlot, labels = c("A", "B"), ncol=2, nrow=1, rel_heights= c(1,1), rel_widths = c(1,1), label_size = 20, label_y=1, align="h");figure2a
+figure2a<-plot_grid(LarvalSurvPlot, LarvalSettlePlot, labels = c("a", "b"), ncol=2, nrow=1, rel_heights= c(1,1), rel_widths = c(1,1), label_size = 20, label_y=1, align="h");figure2a
 
-figure2b<-plot_grid(figure2a, RecruitSurvPlot, labels = c("", "C"), ncol=1, nrow=2, rel_heights= c(1,1), rel_widths = c(1,1), label_size = 20, label_y=1);figure2b
+figure2b<-plot_grid(figure2a, RecruitSurvPlot, labels = c("", "c"), ncol=1, nrow=2, rel_heights= c(1,1), rel_widths = c(1,1), label_size = 20, label_y=1);figure2b
 
 ggsave(filename="Figures/DataFigure.pdf", plot=figure2b, dpi=500, width=12, height=10, units="in")
 ggsave(filename="Figures/DataFigure.png", plot=figure2b, dpi=500, width=12, height=10, units="in")

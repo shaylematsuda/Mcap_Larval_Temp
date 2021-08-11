@@ -258,7 +258,7 @@ survival_temps%>%group_by(Treatment)%>%summarise(mean=mean(Temp), sd=sd(Temp), s
 ```{r}
 library(cowplot)
 
-temp_panel<-plot_grid(conical_plot, settlement_plot, recruit_plot, labels = c("Larval Exposure", "Larval Settlement", "Recruit Survival"), ncol=3, nrow=1, rel_heights= c(1,1,1), rel_widths = c(1,1,1), label_size = 10, label_y=1, align="vh")
+temp_panel<-plot_grid(conical_plot, settlement_plot, recruit_plot, labels = c("a. Larval Exposure", "b. Larval Settlement", "c. Recruit Survival"), ncol=3, nrow=1, rel_heights= c(1,1,1), rel_widths = c(1,1,1), label_size = 10, label_y=1, align="vh")
 
 # add the legend to the row we made earlier. Give it one-third of 
 # the width of one plot (via rel_widths).

@@ -281,6 +281,12 @@ RecruitSurvPlot<-ggplot(data=recruit_surv_table, aes(x=Days, y=mean, shape=Juv.T
   xlab(expression(bold("Days Exposure")));RecruitSurvPlot 
 ```
 
+Add individual aggregate section here when finalized: 
+
+xxxxx
+
+
+
 Analyze recruit survival over time between treatments with a binomial mixed model with a success and failure vector
 
 ```{r}

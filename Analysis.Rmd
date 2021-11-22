@@ -342,12 +342,22 @@ agg_summary<-agg_ind%>%
   group_by(Juv.Treatment, Larval.Treatment)%>%
   summarise(mean=mean(prop_agg, na.rm=TRUE));agg_summary
 
-hist(agg_ind$prop_agg)
+plug_summary<-agg_ind%>%
+  group_by(Plug.ID)%>%
+  summarise(mean=mean(prop_agg, na.rm=TRUE))%>%
+  filter(!is.na(mean))
+
+hist(plug_summary$mean)
+
+n=sum(with(plug_summary, mean<0.2))
+d=sum(with(plug_summary, mean<1))
+n/d
+#97% of plugs have <50% aggregates
+#80% of plugs have <20% aggregates 
+#67% of plugs have <10% aggregates
 
 agg_ind<-agg_ind%>%
   filter(prop_agg<0.5)
-
-hist(agg_ind$prop_agg)
 
 summary(aov(prop_agg~Juv.Treatment*Larval.Treatment, data=agg_ind))
 

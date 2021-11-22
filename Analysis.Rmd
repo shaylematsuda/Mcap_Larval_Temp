@@ -312,6 +312,61 @@ Overall, there are significant effects of juvenile treatment and day, but no eff
 2. There is a significant reduction in survivorship over time (sign. effect of day). 
 3. There is a signiicant interaction between day and treatment, specifically that there is a significant reduction in survival in high temperature over time as compared to ambient over time. There are different rates of survival depending on treatment. 
 
+
+## Account for the effect of colony type (individual vs aggregate) on survival    
+
+The success and failure columns in the `recruits` data frame reflect the total survival (recruits + individuals). Generate a new success and failure column for individuals and aggregates separately.  
+
+```{r}
+#success is the number of alive colonies (Ind or Agg columns)
+#failure is the number of starting alive colonies - number of alive colonies at a given time point
+agg_ind<-recruits%>%
+  mutate(Success_Ind=Individual)%>%
+  mutate(Success_Agg=Aggregate)%>%
+  group_by(Plug.ID)%>%
+  arrange(Plug.ID)%>%
+  mutate(Failure_Ind=lag(first(Success_Ind), default = first(Success_Ind))-Success_Ind)%>%
+  mutate(Failure_Agg=lag(first(Success_Agg), default = first(Success_Agg))-Success_Agg)
+
+#calculate proportion of colonies that are aggregates for these plugs to look at how this might impact results 
+agg_ind<-agg_ind%>%
+  mutate(prop_agg=Aggregate/Total)
+
+agg_summary<-agg_ind%>%
+  group_by(Juv.Treatment, Larval.Treatment)%>%
+  summarise(mean=mean(prop_agg, na.rm=TRUE));agg_summary
+
+hist(agg_ind$prop_agg)
+
+agg_ind<-agg_ind%>%
+  filter(prop_agg<0.5)
+
+hist(agg_ind$prop_agg)
+
+summary(aov(prop_agg~Juv.Treatment*Larval.Treatment, data=agg_ind))
+
+```
+
+```{r}
+agg_ind$Days<-as.factor(as.character(agg_ind$Days))
+attach(agg_ind)
+
+y<-cbind(Success, Failure)
+
+model4<-glmer(y~Juv.Treatment * Larval.Treatment * Days + (1|Tank/Plug.ID) + (1|prop_agg), family=binomial, data=agg_ind) 
+summary(model4) 
+Anova(model4, type=2)
+posthoc4<-emmeans(model4, ~Juv.Treatment|Days, adjust="Tukey")
+cld(posthoc4)
+pairs(posthoc4)
+
+#Survival is significantly different b/t high and ambient at day 28 and day 47
+
+dispersion_glmer(model4) #no evidence of overdispersion as value is <1.4
+
+detach(agg_ind)
+```
+
 # Generate figure  
 
 ```{r}

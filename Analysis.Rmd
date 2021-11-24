@@ -383,6 +383,30 @@ dispersion_glmer(model4) #no evidence of overdispersion as value is <1.4
 detach(agg_ind)
 ```
 
+Run model on only indiviual colonies (removing aggregates).  
+```{r}
+#agg_ind$Days<-as.factor(as.character(agg_ind$Days))
+attach(agg_ind)
+
+y<-cbind(Success_Ind, Failure_Ind)
+
+model5<-glmer(y~Juv.Treatment * Larval.Treatment * Days + (1|Tank/Plug.ID), subset=c(Failure_Ind>0), family=binomial, data=agg_ind) 
+summary(model5) 
+Anova(model5, type=2)
+posthoc5<-emmeans(model5, ~Juv.Treatment|Days, adjust="Tukey")
+cld(posthoc5)
+pairs(posthoc5)
+
+#Survival is significantly different b/t high and ambient at day 28 and day 47
+
+dispersion_glmer(model5) #no evidence of overdispersion as value is <1.4
+
+detach(agg_ind)
+```
+
+
+
+
 # Generate figure  
 
 ```{r}

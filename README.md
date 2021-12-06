@@ -4,6 +4,10 @@
 
 ### Journal: Coral Reefs
 
+*Corresponding authors:   
+AS Huffmyer (ashuffmyer@gmail.com)  
+SB Matsuda (shaylematsuda@gmail.com)*  
+
 Experiment testing on the effects of temperature conditioning on *M. capitata* larval survivorship, settlement and performance under heat stress. 
 
 This respository contains data and analyses for experimental temperature treatments, larval survival, larval settlement, and recruit survival. 
@@ -12,6 +16,30 @@ Respository contains .rmd files for analyses in R, data, output, and figure fold
 
 All analyses run from R project.  
 
-#### Corresponding authors: AS Huffmyer (ashuffmyer@gmail.com), SB Matsuda (shaylematsuda@gmail.com)
+# Description of repository    
+
+**Scripts:**   
+`Analysis.Rmd`: Markdown script to analyze larval survival, larval settlement, and recruit survival.   
+`Temperature_analysis.Rmd`: Markdown script to analyze and plot temperature treatments.     
+
+Scripts will output `.html` files if `knit` is executed.  
+
+**Data Folder:**  
+`surv_larvae.csv`: Data for larval survival. Data includes date of measurement (Date), day of experiment (Day), conical tank numer (Conical), treatment (Treatment; C=Cold; A=Ambient), number of larvae (Larvae), volume of sample (Volume; mL), sample replicate (Sample), and total volume of conical (ConicalVol; mL).  
+
+`settlement.csv`: Data for larval settlement. Data includes tank number (Tank), treatment (Treatment), chamber number (Chamber), plug number (Plug), number of starting larvae (Starting Larvae), day of experiment (Day), total number of recruits (Total), number settled as aggregates (Aggregate), number settled as individuals (Individual), and notes (Notes).  
+
+`surv_recruits.csv`: Data for recruit survival. Data includes plug number (Plug.ID), tank number (Tank), day of experiment (Days), total number of alive recruits (Total), number of surviving aggregate colonies (Aggregate), number of surviving individual colonies (Individual), recruit temperature treatment (Juv.Treatment), number of alive recruits (Success), number of recruits that have died (Failure). Note in the data and scripts we refer to "juvenile treatment", which is specified as "recruit treatment" in the manuscript.  
+
+**Figures Folder**:  
+
+Scripts will output figures into the figures folder.  
+
+**Temperature Folder**:  
+
+Folder containing temperature data frames for larval, settlement, and recruit exposure phases of the experiment.  
+
+  
+
 
 

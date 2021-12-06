@@ -1,84 +1,86 @@
 ---
 title: "Temperature analysis"
 author: "Ariana S Huffmyer"
-date: "6/24/2021"
-output: html_document
+date: "11/30/2021"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 6
+    toc_float: yes
 editor_options: 
   chunk_output_type: console
 ---
+
+Temperature analysis for Alexander et al., "Larval thermal conditioning does not improve post-settlement thermal tolerance in the dominant reef-building coral, *Montipora capitata*".    
 
 # Set Up  
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 
-library("car") #levenes test
-library("ggplot")
+library("car") #levenes and statistical tests
 library("ggplot2") #plotting
 library("plotrix") #plotting
 library("reshape2") #data shaping
-require("gridExtra") #Arrange Plots for output
-require("plyr") #for ddply
-require("dplyr")
-require("utils")
-library("tidyverse")
+library("gridExtra") #arrange Plots for output
+library("utils") #R utilities
+library("tidyverse") #tidyverse
+library("cowplot") #plot arrangement
+library("readxl") #read .xls files
+library("lubridate") #date and times
+library("scales") #plotting scales
 ```
 
-Temperature treatments during experiment.  
+Examine and plot temperature treatments during the larval conditioning, settlement, and recruit survival phases of the experiment.  
 
 # Larval temperature treatments  
 
-Load temperature files for ambient and cold sump during larval rearing and calibrate to calibration file.  
+Load temperature files for temperature logging in the ambient and cold sumps (headers) during larval rearing and calibrate to calibration file.  
 ```{r}
 #Load calibration data, extract intercept and slope to calibrate individual loggers
 calib.data.T <- read.csv("Temperature/Temp_Logger_Calibration.csv", header=TRUE) #load data with a header, separated by commas, with NA as NA
-calib.T <- as.data.frame(t(apply(calib.data.T[2:21], 2, function(y)(coef(lm(y ~ calib.data.T$SN_10779069)))))) #apply linear model to obtain calibration equations
+calib.T <- as.data.frame(t(apply(calib.data.T[2:21], 2, function(y)(coef(lm(y ~ calib.data.T$SN_10779069)))))) #apply linear model to obtain calibration equations for specific logger 
 colnames(calib.T) <- c("Intercept",  "Slope") #rename columns
 
-#SUMP only
 #Load data
 AmbSump<-read.csv("Temperature/Ambient_Sump_10779069.csv",header=TRUE, sep=",", na.strings="NA") #this logger is the standard, no change
 #Intercept: -2.757311e-14     slope= 1.0000000, line equation y=1  x +-2.757311e-14
-AmbSump$calibratedT<-(AmbSump$Temp*1)+-2.757311e-14
+AmbSump$calibratedT<-(AmbSump$Temp*1)+-2.757311e-14 #apply calibration from linear model for specific logger
 names(AmbSump)[3] <- "AmbientSump" #rename calibrated col to tank name
 AmbSump<- AmbSump[ -c(2) ] #drop uncalibrated col
 
-ColdSump<-read.csv("Temperature/cold_sump_10487935.csv",header=TRUE, sep=",", na.strings="NA")
+ColdSump<-read.csv("Temperature/cold_sump_10487935.csv",header=TRUE, sep=",", na.strings="NA") #read in cold tempreature logger
 #Intercept: -5.645523e-02   Slope: 1.0004740, line equation y=1.0004740x + -5.645523e-02
-ColdSump$calibratedT<-(ColdSump$Temp*1.0004740)+-5.645523e-02
+ColdSump$calibratedT<-(ColdSump$Temp*1.0004740)+-5.645523e-02 #apply linear calibration
 names(ColdSump)[3] <- "ColdSump" #rename calibrated col to tank name
 ColdSump<- ColdSump[ -c(2) ] #drop uncalibrated col
 ```
 
-
-Plot ambient and cold sumps for reference. Note that temperature data presented was obtained from individual temperature loggers in conical vessels. 
+Plot ambient and cold sumps for reference for header source for conicals. Note that temperature data presented in manuscript and analyzed below for manuscript plots was obtained from individual temperature loggers in conical vessels.   
 
 ```{r}
 #combine Amb and cold sump for plotting
 SUMPdf<-merge(AmbSump,ColdSump, by="Date.Time") #merge and keep only time points over lap
-SUMPdf<-melt(SUMPdf,id=c("Date.Time"))
-SUMPdf$Date.Time<-as.character(SUMPdf$Date.Time)
-SUMPdf$Date <- format(as.POSIXct(strptime(SUMPdf$Date.Time,"%m/%d/%Y %H:%M",tz="")) ,format = "%m/%d") #to get daily means set up a date only col
+SUMPdf<-melt(SUMPdf,id=c("Date.Time")) #change from wide to long format
+SUMPdf$Date.Time<-as.character(SUMPdf$Date.Time) #change date time to character
+SUMPdf$Date <- format(as.POSIXct(strptime(SUMPdf$Date.Time,"%m/%d/%Y %H:%M",tz="")) ,format = "%m/%d") #change date time to date only format
 
-SUMP_mean <- ddply(SUMPdf, c("variable", "Date"), summarise, 
-                          N    = length(value[!is.na(value)]), #calculate the length of the data frame, excluding NA’s *this part is important*
-                          mean = mean(value, na.rm=TRUE), #calculate mean of response variable, removing NA's
-                          sd   = sd(value, na.rm=TRUE), #calculate standard deviation
-                          se   = sd / sqrt(N), #calculate standard error
-                          max = max(value, na.rm=TRUE) #calculate max, could also calculate min () if desired
+SUMP_mean <- plyr::ddply(SUMPdf, c("variable", "Date"), summarise, 
+                          N    = length(value[!is.na(value)]), #calculate the length of the data frame, excluding NA’s 
+                          mean = mean(value, na.rm=TRUE), #calculate mean of response variable (temperature), removing NA's
+                          sd   = sd(value, na.rm=TRUE), #calculate standard deviation of temperature
+                          se   = sd / sqrt(N), #calculate standard error of temperature 
+                          max = max(value, na.rm=TRUE) #calculate max temperature, could also calculate min () if desired
 )
-SUMP_mean
+SUMP_mean #display summary
 
-SUMP_plot<-ggplot(data=SUMP_mean, aes(x=Date, y=mean, group = variable, color=variable)) + 
+SUMP_plot<-ggplot(data=SUMP_mean, aes(x=Date, y=mean, group = variable, color=variable)) + #plot temperature in sumps
   geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd),
                 width=0.1)+
-  geom_point(aes(shape=variable), size=3)+
-  geom_line(aes(color=variable, linetype=variable))+
-  scale_color_manual(values=c("#000000","#0072B2"))+
-  #scale_linetype_manual(values=c("solid", "dotted"))+
- # scale_color_manual(values=c("black", "black","black"))+
-  ylab("Temp") +
-  xlab("Time") + #Label the X Axis
-  #ylim(0, 100) + #set Y limits
+  geom_point(aes(shape=variable), size=3)+ #plot points
+  geom_line(aes(color=variable, linetype=variable))+ #plot lines between points
+  scale_color_manual(values=c("#000000","#0072B2"))+ #set colors
+  ylab("Temperature (°C)") +
+  xlab("Date") + #Label the X Axis
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -86,33 +88,32 @@ SUMP_plot<-ggplot(data=SUMP_mean, aes(x=Date, y=mean, group = variable, color=va
         panel.grid.major = element_blank(), #Set the major gridlines
         panel.grid.minor = element_blank(), #Set the minor gridlines
         plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  ggtitle("SUMP TEMP")+
-  theme(plot.title = element_text(size=20,face = "italic",hjust = 0.5));SUMP_plot
+        legend.title = element_blank(),
+        legend.key = element_blank()) #Set plot legend key
+
+SUMP_plot
 ```
 
-Cold and ambient temperature sumps were distinct temperature regimes.  
+Cold and ambient temperature sumps (header tanks) had distinct temperature regimes.  
 
-Plot temperature data from loggers in conicals and view averages of each treatment (Script and data from Hancock et al. 2021).  
+Next, plot temperature data obtained from loggers in conicals and view averages of each treatment (Script and data from Hancock et al. 2021, reproduced with authors' permission). This data represents conditions that larvae were directly exposed to during experiment.  
 
 ```{r}
-library(readxl);library(tidyverse);library(lubridate);library(scales);library(plotrix)
-hot<-read_excel("Temperature/conicals.xlsx",sheet="Hot");str(data)
-ambient<-read_excel("Temperature/conicals.xlsx",sheet="Ambient");str(ambient)
-cold<-read_excel("Temperature/conicals.xlsx",sheet="Cold");str(cold)
+hot<-read_excel("Temperature/conicals.xlsx",sheet="Hot") #load data files
+ambient<-read_excel("Temperature/conicals.xlsx",sheet="Ambient")
+cold<-read_excel("Temperature/conicals.xlsx",sheet="Cold")
 
-data<-full_join(full_join(hot,ambient,by="Date"),cold,by="Date")%>%
+data<-full_join(full_join(hot,ambient,by="Date"),cold,by="Date")%>% #join data files together from each treatment and format
      dplyr::rename(Hot=Temp.x,Ambient=Temp.y)%>%
      gather(Treatment,Temp,-Date)%>%
-     filter(Date>as.POSIXct("2019-07-06")&Date<as.POSIXct("2019-07-9"))
-data$Treatment <- factor(data$Treatment,levels = c("Cold", "Ambient", "Hot"))
+     filter(Date>as.POSIXct("2019-07-06")&Date<as.POSIXct("2019-07-9")) #isolate days of experiment
+data$Treatment <- factor(data$Treatment,levels = c("Cold", "Ambient", "Hot")) #re order factors 
 
-conical_plot<-ggplot(data)+geom_point(aes(Date,Temp,color=Treatment),alpha=0.3,size=1)+
+conical_plot<-ggplot(data)+geom_point(aes(Date,Temp,color=Treatment),alpha=0.3,size=1)+ #Plot temprature treatments
      theme_classic()+
      scale_color_manual(values=c("darkblue","lightblue","red"), labels=c("Cool", "Ambient", "Warm"))+
      geom_smooth(aes(Date,Temp,color=Treatment),se=FALSE,span=0.15,size=0.5)+
      scale_x_datetime(date_breaks="1 day",minor_breaks=waiver(),labels=date_format("%m-%d"))+
-     #scale_y_continuous(breaks=seq(23,32,1))+
      ylim(22.5, 32.5)+
      ylab("Temperature (°C)")+
      theme(legend.key.size = unit(1,"line"))+
@@ -121,10 +122,8 @@ conical_plot<-ggplot(data)+geom_point(aes(Date,Temp,color=Treatment),alpha=0.3,s
     theme(plot.margin = margin(0.5, 0.1, 0.1, 0.1, "cm"))+
     theme(legend.text=element_text(size=9)); conical_plot
 
-#ggsave("Figures/concial_plot.png", plot=conical_plot, w=5, h=3, units="in", dpi=300)
-
+#grab summary of temperature treatments 
 data%>%group_by(Treatment)%>%summarise(mean=mean(Temp),sd=sd(Temp),se=std.error(Temp))
-
 
 #create a legend for later 
 #build a plot for the legend
@@ -136,18 +135,14 @@ legend <- get_legend(
   # create some space to the left of the legend
   legend_plot)
 
-#+ theme(legend.box.margin = margin(1,1,1,1))
-#)
-
 ```
-
 
 # Temperatures during larval settlement and recruit survival  
 
-Display temperatures in tanks during larval settlement and recruit survival.  
+Display temperatures in tanks during larval settlement and recruit survival phases of the experiment. During larval settlement, larvae were kept at ambient temperature. During recruit survival, recruits were then exposed to either ambient or high temperature treatments.     
 
 ```{r}
-#TANKS ONLY
+#read in data from the 4 tanks used for larval settlement and recruit survival 
 Tank1<-read.csv("Temperature/Tank1_5Sept_10779060.csv",header=TRUE, sep=",", na.strings="NA")
 #Intercept: -5.899138e-02     Slope: 1.0015297 , line equation y=1.0015297 x + -5.899138e-02  
 Tank1$calibratedT<-(Tank1$Temp*1.0015297)+-5.899138e-02
@@ -179,21 +174,16 @@ Tankdf<-right_join(Tankdf, Tank4, by=c("DateTime", "Phase"))
 
 Tankdf$DateTime<-as.character(as.POSIXct(Tankdf$DateTime, format="%m/%d/%y %H:%M"))
 
-#Tankdf$Date.Time<-as.character(Tankdf$DateTime)
-#Tankdf$Date <- format(as.POSIXct(strptime(Tankdf$DateTime,"%m/%d/%Y %H:%M",tz="")) ,format = "%m/%d") #to get daily means set up a date only col
-#Tankdf$Hour <- format(as.POSIXct(strptime(Tankdf$DateTime,"%m/%d/%Y %H:%M",tz="")) ,format = "%H") #to get daily means set up a date only col
-#Tankdf$DateHour <- format(as.POSIXct(strptime(Tankdf$DateTime,"%m/%d/%Y %H:%M",tz="")) ,format ="%m/%d %H") #to get daily means set up a date only col
-
 ```
 
-Separate settlement and survival phases and assign temperature treatment names.  
+Separate settlement and survival phases and assign temperature treatment names for the settlement (ambient only) and recruit survival phases (high and ambient).  
 
 ```{r}
 settlement_temps<-Tankdf%>%
   filter(Phase=="Settlement")%>%
-  gather(Tank, Temp, Tank1:Tank4)
+  gather(Tank, Temp, Tank1:Tank4) #gather data set
 
-settlement_temps$Treatment<-"Ambient"
+settlement_temps$Treatment<-"Ambient" #set treatment for settlement
 
 survival_temps<-Tankdf%>%
   filter(Phase=="Survival")%>%
@@ -204,7 +194,6 @@ survival_temps<-Tankdf%>%
                                Tank=="Tank4" ~ "High"))
 ```
 
-
 ## Larval settlement  
 
 Plot temperatures during larval settlement and calculate mean values.  
@@ -214,7 +203,6 @@ settlement_plot<-ggplot(settlement_temps)+geom_point(aes(as.POSIXct(DateTime),Te
      scale_color_manual(values=c("lightblue"))+
      geom_smooth(aes(as.POSIXct(DateTime),Temp,color=Treatment),se=FALSE,span=0.15,size=0.5)+
      scale_x_datetime(date_breaks="4 days",minor_breaks=waiver(),labels=date_format("%m-%d"))+
-     #scale_y_continuous(breaks=seq(23,32,1))+
      ylim(22.5, 32.5)+
      xlab("Date")+
      ylab("Temperature (°C)")+
@@ -222,8 +210,7 @@ settlement_plot<-ggplot(settlement_temps)+geom_point(aes(as.POSIXct(DateTime),Te
     theme(plot.margin = margin(0.5, 0.1, 0.1, 0.1, "cm"))+
     theme(legend.position="none"); settlement_plot
 
-#ggsave("Figures/settlement_temps.png", plot=settlement_plot, w=5, h=3, units="in", dpi=300)
-
+#grab summary of the data 
 settlement_temps%>%group_by(Treatment)%>%summarise(mean=mean(Temp), sd=sd(Temp), se=std.error(Temp))
 
 ```
@@ -246,18 +233,17 @@ recruit_plot<-ggplot(survival_temps)+geom_point(aes(as.POSIXct(DateTime),Temp,co
     theme(plot.margin = margin(0.5, 0.1, 0.1, 0.1, "cm"))+
     theme(legend.position="none"); recruit_plot
 
-#ggsave("Figures/recruit_temps.png", plot=recruit_plot, w=5, h=3, units="in", dpi=300)
-
+#grab summary of the data 
 survival_temps%>%group_by(Treatment)%>%summarise(mean=mean(Temp), sd=sd(Temp), se=std.error(Temp))
 
 ```
 
 
-# Generate temperature figure  
+# Generate temperature figure 
+
+Plot temperature for all phases of the experiment.  
 
 ```{r}
-library(cowplot)
-
 temp_panel<-plot_grid(conical_plot, settlement_plot, recruit_plot, labels = c("a. Larval Exposure", "b. Larval Settlement", "c. Recruit Survival"), ncol=3, nrow=1, rel_heights= c(1,1,1), rel_widths = c(1,1,1), label_size = 10, label_y=1, align="vh")
 
 # add the legend to the row we made earlier. Give it one-third of 
@@ -265,6 +251,8 @@ temp_panel<-plot_grid(conical_plot, settlement_plot, recruit_plot, labels = c("a
 temp_plot_legend<-plot_grid(temp_panel, legend, rel_widths = c(6, .6), ncol=2, nrow=1)
  
 ggsave(filename="Figures/Full_Temp_Figure.png", plot=temp_plot_legend, dpi=500, width=12, height=2, units="in")
+
+temp_plot_legend
 ```
 
 

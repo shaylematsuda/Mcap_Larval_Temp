@@ -135,10 +135,6 @@ LarvalSurvPlot<-ggplot(data=larvae_surv_table, aes(x=Day, y=mean, colour=Treatme
   xlab(expression(bold("Days")));LarvalSurvPlot 
 ```
 
-Overall, there are significant effects of the interaction between treatment and day:   
-1. There is a significant reduction in survivorship over time (sign. effect of day). 
-2. There is a signiicant interaction between day and treatment, specifically that there is a significant reduction in survival in cool temperature oat the ending timepoint as compared to ambient. There was also a trend for lower survival in high temperature, but this was not significant.   
-
 # Larval settlement  
 
 Load data for larval settlement. Calculate proportion of larvae settled in each chamber. Each chamber was loaded with a known number of larvae at the start of the settlement period. At each time point the number of recruits were counted and proportion settlement is calculated as the number of settled recruits at each time point divided by the number of starting larvae.     
@@ -178,7 +174,7 @@ larval_settle_table <- plyr::ddply(total_settle, c("Treatment", "Day"), summaris
 larval_settle_table 
 ```
 
-Analyze "total" settlement over time between treatments with a linear mixed model. As all chambers started with 100 larvae, we are not using the vector of success and failure. Because this is count data we will use a poisson distribution in a glmer model. Nest chamber within tank as this is repeated measures.  
+Analyze total settlement over time between treatments with a linear mixed model. Because this is count data we will use a poisson distribution in a glmer model. Nest chamber within tank as this is repeated measures.  
 
 Build model: `glmer(total ~ Treatment + Day  + Treatment:Day + (1|Tank/Chamber), data=total_settle, family=poisson)` 
 ```{r}
@@ -237,11 +233,6 @@ LarvalSettlePlot<-ggplot(data=larval_settle_table, aes(x=Day, y=mean, colour=Tre
   xlab(expression(bold("Days"))); LarvalSettlePlot 
 ```
 
-Overall, there is a significant effect of day and treatment on settlement. 
-1. There is lower settlement in cool temp compared to ambient and higher settlement in high as compared to ambient (sign. effect of treatment).  
-2. There is significantly higher settlement over time (sign. effect of day).  
-3. There is an increase in settlement over time in cool temperature, but less settlement over time in high temperature - there are different rates of settlement between treatments (sign. effect of day * treatment interaction).  
-
 # Recruit survival  
  
 Load data for recruit survival. Calculate percent recruit survival as the number of recruits alive at each timepoint divided by the number of recruits alive at the start of the experiment. 
@@ -259,7 +250,7 @@ recruits$proportion<-(recruits$Success/(recruits$Success+recruits$Failure))*100 
 recruits$Larval.Treatment<-settle$Treatment[match(recruits$Plug.ID, settle$Plug)]
 ```
 
-Generate a summary table of recruit survival over time (days 0, 1, 3, 4) in ambient and high conditions originating from ambient, cool, and high larval treatments treatments. In this experiment recruits that originated from each larval treatment were exposed to ambient and high recruit treatments.    
+Generate a summary table of recruit survival over time (days 0, 1, 3, 4) in ambient and high conditions originating from ambient, cool, and high larval treatments treatments. In this experiment recruits that originated from each larval treatment were exposed to ambient and high recruit treatments. Note that "juvenile" terms here refer to spat stage. Terminology revised for manuscript text.      
 ```{r}
 
 recruit_surv_table <- plyr::ddply(recruits, c("Days", "Juv.Treatment", "Larval.Treatment"), summarise, 
@@ -284,7 +275,7 @@ recruit_surv_table2 <- plyr::ddply(recruits, c("Days", "Juv.Treatment", "Tank"),
 
 ```
 
-Analyze recruit survival over time between treatments with a binomial mixed model with a success and failure vector. Plug included as a random effect due to repeated measures. Proportion aggregation for each plug also included as a random effect to account for variation in settlement behavior.  
+Analyze recruit survival over time between treatments with a binomial mixed model with a success and failure vector. Plug included as a random effect due to repeated measures. 
 
 Build model for recruit survival: `glmer(y~Juv.Treatment * Larval.Treatment * Days + (1|Tank/Plug.ID), family=binomial, data=recruits)`
 ```{r}
@@ -318,7 +309,7 @@ dispersion_glmer(model3) #no evidence of overdispersion as value is <1.4
 
 We now need to account for the effect of colony type (individual vs aggregate) on survival. We found variation in settlement behavior with recruits settling both as individuals and aggregates of multiple larvae. The number of aggregates and individuals was recorded and the survival of each individual tracked.    
 
-The success and failure columns reflect the total survival (recruits + individuals). Generate a new success and failure column for individuals and aggregates separately. Displaymean proportion aggregation for each treatment combination.  
+The success and failure columns reflect the total survival (recruits + individuals). Generate a new success and failure column for individuals and aggregates separately. Display mean proportion aggregation for each treatment combination.  
 ```{r}
 #success is the number of alive colonies (Ind or Agg columns)
 #failure is the number of starting alive colonies - number of alive colonies at a given time point
@@ -380,7 +371,7 @@ Test for differences in aggregation by treatments.
 summary(aov(prop_agg~Juv.Treatment*Larval.Treatment, data=agg_ind))
 ```
 
-There is a significant effect of treatment on aggregation, therefore this needs to be accounted for in our analysis. Because our experimental design was not designed to examine aggregate vs individual dynamics, we will account for aggregation as a random effect in our modeling. Model structure will be the same as previous model, but with the added random effect of proportion aggregation.  
+There is a significant effect of treatment on aggregation, therefore this needs to be accounted for in our analysis. Because our experimental design was not designed to examine aggregate vs individual dynamics, we will account for aggregation as a random effect in our modeling. Model structure will be the same as previous model, but with the added random effect of proportion aggregation for each replicate (plug).  
 
 Model: `glmer(y~Juv.Treatment * Larval.Treatment * Days + (1|Tank/Plug.ID) + (1|prop_agg), family=binomial, data=agg_ind)`
 ```{r}
@@ -423,8 +414,8 @@ RecruitSurvPlot<-ggplot(data=recruit_surv_table, aes(x=Days, y=mean, shape=Juv.T
   geom_point(size=5, position=position_dodge(0.5), show.legend=FALSE) + 
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), 
                 width=0.0, size=1, position=position_dodge(0.5), linetype=1)+ 
-  scale_linetype_manual(name="Juvenile Treatment", values=c("solid", "dotted"), labels=c("Ambient", "High"))+
-  scale_shape_manual(name="Juvenile Treatment", values=c(19,21))+ 
+  scale_linetype_manual(name="Spat Treatment", values=c("solid", "dotted"), labels=c("Ambient", "High"))+
+  scale_shape_manual(name="Spat Treatment", values=c(19,21))+ 
   theme_classic()+ 
   ylim(0,100)+
   xlim(0,50)+
@@ -434,28 +425,22 @@ RecruitSurvPlot<-ggplot(data=recruit_surv_table, aes(x=Days, y=mean, shape=Juv.T
   theme(legend.text = element_text(size = 18, color="black"))+
   theme(axis.title = element_text(size = 18, color="black"))+ 
   theme(legend.position = "bottom")+ 
-  ylab(expression(bold(paste("Recruit Survivorship (%)")))) + 
+  ylab(expression(bold(paste("Spat Survivorship (%)")))) + 
   theme(plot.margin = margin(1, 0.1, 0, 0.1, "cm")) +
   geom_text(x=28, y=100, label="**", size=10, color="black") +
   geom_text(x=47, y=93, label="**", size=10, color="black") +
-  geom_text(x=25, y=25, label="p(Juvenile Treatment x Day)<0.001", size=6, color="black") +
+  geom_text(x=25, y=25, label="p(Spat Treatment x Day)<0.001", size=6, color="black") +
   xlab(expression(bold("Days Exposure")));RecruitSurvPlot 
 ```
-
-Overall, there are significant effects of juvenile treatment and day, but no effect of larval treatment. 
-
-1. There is lower survivorship in high temperature for recruits (sign. effect of juv.treatment)
-2. There is a significant reduction in survivorship over time (sign. effect of day). 
-3. There is a signiicant interaction between day and treatment, specifically that there is a significant reduction in survival in high temperature over time as compared to ambient over time. There are different rates of survival depending on treatment. 
 
 # Generate final figure  
   
 ```{r}
 #generate figure with larval survival, settlement, and recruit survival in one panel 
 
-figure_surv<-plot_grid(LarvalSurvPlot, LarvalSettlePlot, labels = c("a", "b"), ncol=2, nrow=1, rel_heights= c(1,1), rel_widths = c(1,1), label_size = 20, label_y=1, align="h");figure_surv
+figure_surv<-plot_grid(LarvalSurvPlot, LarvalSettlePlot, labels = c("a", "b"), ncol=2, nrow=1, rel_heights= c(1,1), rel_widths = c(1,1), label_size = 20, label_y=1, align="h")
 
-figure_surv_b<-plot_grid(figure_surv, RecruitSurvPlot, labels = c("", "c"), ncol=1, nrow=2, rel_heights= c(1,1), rel_widths = c(1,1), label_size = 20, label_y=1);figure_surv_b
+figure_surv_b<-plot_grid(figure_surv, RecruitSurvPlot, labels = c("", "c"), ncol=1, nrow=2, rel_heights= c(1,1), rel_widths = c(1,1), label_size = 20, label_y=1)
 
 ggsave(filename="Figures/DataFigure.pdf", plot=figure_surv_b, dpi=500, width=12, height=10, units="in")
 ggsave(filename="Figures/DataFigure.png", plot=figure_surv_b, dpi=500, width=12, height=10, units="in")

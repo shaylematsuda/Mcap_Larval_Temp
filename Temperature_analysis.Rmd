@@ -244,7 +244,7 @@ survival_temps%>%group_by(Treatment)%>%summarise(mean=mean(Temp), sd=sd(Temp), s
 Plot temperature for all phases of the experiment.  
 
 ```{r}
-temp_panel<-plot_grid(conical_plot, settlement_plot, recruit_plot, labels = c("a. Larval Exposure", "b. Larval Settlement", "c. Recruit Survival"), ncol=3, nrow=1, rel_heights= c(1,1,1), rel_widths = c(1,1,1), label_size = 10, label_y=1, align="vh")
+temp_panel<-plot_grid(conical_plot, settlement_plot, recruit_plot, labels = c("a. Larval Exposure", "b. Larval Settlement", "c. Spat Survival"), ncol=3, nrow=1, rel_heights= c(1,1,1), rel_widths = c(1,1,1), label_size = 10, label_y=1, align="vh")
 
 # add the legend to the row we made earlier. Give it one-third of 
 # the width of one plot (via rel_widths).
@@ -252,17 +252,7 @@ temp_plot_legend<-plot_grid(temp_panel, legend, rel_widths = c(6, .6), ncol=2, n
  
 ggsave(filename="Figures/Full_Temp_Figure.png", plot=temp_plot_legend, dpi=500, width=12, height=2, units="in")
 
-temp_plot_legend
+#temp_plot_legend
 ```
-
-
-
-
-
-
-
-
-
-
 
 

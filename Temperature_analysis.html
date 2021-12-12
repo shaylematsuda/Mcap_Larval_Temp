@@ -1506,7 +1506,7 @@ div.tocify {
 <p>Temperature analysis for Alexander et al., “Larval thermal conditioning does not improve post-settlement thermal tolerance in the dominant reef-building coral, <em>Montipora capitata</em>”.</p>
 <div id="set-up" class="section level1">
 <h1>Set Up</h1>
-<p>Examine and plot temperature treatments during the larval conditioning, settlement, and recruit survival phases of the experiment.</p>
+<p>Examine and plot temperature treatments during the larval conditioning, settlement, and spat survival phases of the experiment.</p>
 </div>
 <div id="larval-temperature-treatments" class="section level1">
 <h1>Larval temperature treatments</h1>
@@ -1613,10 +1613,10 @@ legend &lt;- get_legend(
   # create some space to the left of the legend
   legend_plot)</code></pre>
 </div>
-<div id="temperatures-during-larval-settlement-and-recruit-survival" class="section level1">
-<h1>Temperatures during larval settlement and recruit survival</h1>
-<p>Display temperatures in tanks during larval settlement and recruit survival phases of the experiment. During larval settlement, larvae were kept at ambient temperature. During recruit survival, recruits were then exposed to either ambient or high temperature treatments.</p>
-<pre class="r"><code>#read in data from the 4 tanks used for larval settlement and recruit survival 
+<div id="temperatures-during-larval-settlement-and-spat-survival" class="section level1">
+<h1>Temperatures during larval settlement and spat survival</h1>
+<p>Display temperatures in tanks during larval settlement and spat survival phases of the experiment. During larval settlement, larvae were kept at ambient temperature. During spat survival, spat were then exposed to either ambient or high temperature treatments.</p>
+<pre class="r"><code>#read in data from the 4 tanks used for larval settlement and spat survival 
 Tank1&lt;-read.csv(&quot;Temperature/Tank1_5Sept_10779060.csv&quot;,header=TRUE, sep=&quot;,&quot;, na.strings=&quot;NA&quot;)
 #Intercept: -5.899138e-02     Slope: 1.0015297 , line equation y=1.0015297 x + -5.899138e-02  
 Tank1$calibratedT&lt;-(Tank1$Temp*1.0015297)+-5.899138e-02
@@ -1647,7 +1647,7 @@ Tankdf&lt;-right_join(Tankdf, Tank3, by=c(&quot;DateTime&quot;, &quot;Phase&quot
 Tankdf&lt;-right_join(Tankdf, Tank4, by=c(&quot;DateTime&quot;, &quot;Phase&quot;))
 
 Tankdf$DateTime&lt;-as.character(as.POSIXct(Tankdf$DateTime, format=&quot;%m/%d/%y %H:%M&quot;))</code></pre>
-<p>Separate settlement and survival phases and assign temperature treatment names for the settlement (ambient only) and recruit survival phases (high and ambient).</p>
+<p>Separate settlement and survival phases and assign temperature treatment names for the settlement (ambient only) and spat survival phases (high and ambient).</p>
 <pre class="r"><code>settlement_temps&lt;-Tankdf%&gt;%
   filter(Phase==&quot;Settlement&quot;)%&gt;%
   gather(Tank, Temp, Tank1:Tank4) #gather data set
@@ -1683,9 +1683,9 @@ settlement_temps%&gt;%group_by(Treatment)%&gt;%summarise(mean=mean(Temp), sd=sd(
 ##   &lt;chr&gt;     &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;
 ## 1 Ambient    28.1 0.378 0.00406</code></pre>
 </div>
-<div id="recruit-survival" class="section level2">
-<h2>Recruit survival</h2>
-<p>Plot temperatures during recruit survival and calculate mean values.</p>
+<div id="spat-survival" class="section level2">
+<h2>Spat survival</h2>
+<p>Plot temperatures during spat survival and calculate mean values.</p>
 <pre class="r"><code>recruit_plot&lt;-ggplot(survival_temps)+geom_point(aes(as.POSIXct(DateTime),Temp,color=Treatment),alpha=0.3,size=1)+
      theme_classic()+
      scale_color_manual(values=c(&quot;lightblue&quot;, &quot;red&quot;))+

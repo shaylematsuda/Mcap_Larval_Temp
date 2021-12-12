@@ -1,5 +1,5 @@
 ---
-title: "Analysis of Larval and Recruit Responses"
+title: "Analysis of Larval and Spat Responses"
 author: "Ariana S Huffmyer"
 date: "11/30/2021"
 output:
@@ -137,7 +137,7 @@ LarvalSurvPlot<-ggplot(data=larvae_surv_table, aes(x=Day, y=mean, colour=Treatme
 
 # Larval settlement  
 
-Load data for larval settlement. Calculate proportion of larvae settled in each chamber. Each chamber was loaded with a known number of larvae at the start of the settlement period. At each time point the number of recruits were counted and proportion settlement is calculated as the number of settled recruits at each time point divided by the number of starting larvae.     
+Load data for larval settlement. Calculate proportion of larvae settled in each chamber. Each chamber was loaded with a known number of larvae at the start of the settlement period. At each time point the number of spat were counted and proportion settlement is calculated as the number of settled spat at each time point divided by the number of starting larvae.     
 ```{r}
 #load dataset
 settle<-read.csv("Data/settlement.csv", header=T, na.strings="NA") #load data 
@@ -233,11 +233,11 @@ LarvalSettlePlot<-ggplot(data=larval_settle_table, aes(x=Day, y=mean, colour=Tre
   xlab(expression(bold("Days"))); LarvalSettlePlot 
 ```
 
-# Recruit survival  
+# Spat survival  
  
-Load data for recruit survival. Calculate percent recruit survival as the number of recruits alive at each timepoint divided by the number of recruits alive at the start of the experiment. 
+Load data for spat survival. Calculate percent spat survival as the number of spat alive at each timepoint divided by the number of spat alive at the start of the experiment. 
 
-In this analysis, the number of recruits alive at each time point is recorded as the number of "successes". The number of larvae that died are "failures". Recruits are tracked by "plug ID".  
+In this analysis, the number of spat alive at each time point is recorded as the number of "successes". The number of larvae that died are "failures". Recruits are tracked by "plug ID". Note that spat are referred to as "recruits" in the code, but spat is used in revised manuscript.   
 ```{r}
 #load and manipulate data
 recruits<-read.csv("Data/surv_recruits.csv", header=T, na.strings="NA") #load recruit survivorship dataset
@@ -250,7 +250,7 @@ recruits$proportion<-(recruits$Success/(recruits$Success+recruits$Failure))*100 
 recruits$Larval.Treatment<-settle$Treatment[match(recruits$Plug.ID, settle$Plug)]
 ```
 
-Generate a summary table of recruit survival over time (days 0, 1, 3, 4) in ambient and high conditions originating from ambient, cool, and high larval treatments treatments. In this experiment recruits that originated from each larval treatment were exposed to ambient and high recruit treatments. Note that "juvenile" terms here refer to spat stage. Terminology revised for manuscript text.      
+Generate a summary table of spat survival over time (days 0, 1, 3, 4) in ambient and high conditions originating from ambient, cool, and high larval treatments treatments. In this experiment recruits that originated from each larval treatment were exposed to ambient and high recruit treatments. Note that "juvenile" terms here refer to spat stage. Terminology revised for manuscript text.      
 ```{r}
 
 recruit_surv_table <- plyr::ddply(recruits, c("Days", "Juv.Treatment", "Larval.Treatment"), summarise, 
@@ -275,9 +275,9 @@ recruit_surv_table2 <- plyr::ddply(recruits, c("Days", "Juv.Treatment", "Tank"),
 
 ```
 
-Analyze recruit survival over time between treatments with a binomial mixed model with a success and failure vector. Plug included as a random effect due to repeated measures. 
+Analyze spat survival over time between treatments with a binomial mixed model with a success and failure vector. Plug included as a random effect due to repeated measures. 
 
-Build model for recruit survival: `glmer(y~Juv.Treatment * Larval.Treatment * Days + (1|Tank/Plug.ID), family=binomial, data=recruits)`
+Build model for spat survival: `glmer(y~Juv.Treatment * Larval.Treatment * Days + (1|Tank/Plug.ID), family=binomial, data=recruits)`
 ```{r}
 recruits$Days<-as.factor(as.character(recruits$Days))
 attach(recruits)
@@ -295,7 +295,7 @@ summary(model3)
 Anova(model3, type=2)
 ```
 
-Run posthoc analysis to look at differences between juvenile treatments for each day because day*juvenile treatment was significant, with no effect of larval treatment.  
+Run posthoc analysis to look at differences between spat treatments for each day because day*spat treatment was significant, with no effect of larval treatment.  
 ```{r}
 posthoc3<-emmeans(model3, ~Juv.Treatment|Days, adjust="Tukey")
 cld(posthoc3)
@@ -307,9 +307,9 @@ Check dispersion assumption.
 dispersion_glmer(model3) #no evidence of overdispersion as value is <1.4
 ```
 
-We now need to account for the effect of colony type (individual vs aggregate) on survival. We found variation in settlement behavior with recruits settling both as individuals and aggregates of multiple larvae. The number of aggregates and individuals was recorded and the survival of each individual tracked.    
+We now need to account for the effect of colony type (individual vs aggregate) on survival. We found variation in settlement behavior with spat settling both as individuals and aggregates of multiple larvae. The number of aggregates and individuals was recorded and the survival of each individual tracked.    
 
-The success and failure columns reflect the total survival (recruits + individuals). Generate a new success and failure column for individuals and aggregates separately. Display mean proportion aggregation for each treatment combination.  
+The success and failure columns reflect the total survival (aggregates + individuals). Generate a new success and failure column for individuals and aggregates separately. Display mean proportion aggregation for each treatment combination.  
 ```{r}
 #success is the number of alive colonies (Ind or Agg columns)
 #failure is the number of starting alive colonies - number of alive colonies at a given time point
@@ -321,7 +321,7 @@ agg_ind<-recruits%>%
   mutate(Failure_Ind=lag(first(Success_Ind), default = first(Success_Ind))-Success_Ind)%>%
   mutate(Failure_Agg=lag(first(Success_Agg), default = first(Success_Agg))-Success_Agg)
 
-#calculate proportion of colonies that are aggregates for these plugs to look at how this might impact results 
+#calculate proportion of colonies that are aggregates for these plugs
 agg_ind<-agg_ind%>%
   mutate(prop_agg=Aggregate/Total)
 
@@ -390,9 +390,9 @@ View summary of model and significance with a Type II ANOVA analysis.
 summary(model4) 
 Anova(model4, type=2)
 ```
-Results show the same significant effects as the previous model - juvenile treatment and day interaction is significant.  
+Results show the same significant effects as the previous model - spat treatment and day interaction is significant.  
 
-Examine posthoc differences between juvenile treatments at each day.  
+Examine posthoc differences between spat treatments at each day.  
 ```{r}
 posthoc4<-emmeans(model4, ~Juv.Treatment|Days, adjust="Tukey")
 cld(posthoc4)
@@ -404,7 +404,7 @@ Examine dispersion assumption.
 dispersion_glmer(model4) #no evidence of overdispersion as value is <1.4
 ```
 
-Graph proportion survival over time in recruits.   
+Graph proportion survival over time in spat   
 ```{r}
 RecruitSurvPlot<-ggplot(data=recruit_surv_table, aes(x=Days, y=mean, shape=Juv.Treatment, linetype=Juv.Treatment, colour=Larval.Treatment, group=interaction(Juv.Treatment, Larval.Treatment))) + 
   scale_colour_manual(name="Larval Treatment",

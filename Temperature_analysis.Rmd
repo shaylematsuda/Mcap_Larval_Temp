@@ -30,7 +30,7 @@ library("lubridate") #date and times
 library("scales") #plotting scales
 ```
 
-Examine and plot temperature treatments during the larval conditioning, settlement, and recruit survival phases of the experiment.  
+Examine and plot temperature treatments during the larval conditioning, settlement, and spat survival phases of the experiment.  
 
 # Larval temperature treatments  
 
@@ -137,12 +137,12 @@ legend <- get_legend(
 
 ```
 
-# Temperatures during larval settlement and recruit survival  
+# Temperatures during larval settlement and spat survival  
 
-Display temperatures in tanks during larval settlement and recruit survival phases of the experiment. During larval settlement, larvae were kept at ambient temperature. During recruit survival, recruits were then exposed to either ambient or high temperature treatments.     
+Display temperatures in tanks during larval settlement and spat survival phases of the experiment. During larval settlement, larvae were kept at ambient temperature. During spat survival, spat were then exposed to either ambient or high temperature treatments.     
 
 ```{r}
-#read in data from the 4 tanks used for larval settlement and recruit survival 
+#read in data from the 4 tanks used for larval settlement and spat survival 
 Tank1<-read.csv("Temperature/Tank1_5Sept_10779060.csv",header=TRUE, sep=",", na.strings="NA")
 #Intercept: -5.899138e-02     Slope: 1.0015297 , line equation y=1.0015297 x + -5.899138e-02  
 Tank1$calibratedT<-(Tank1$Temp*1.0015297)+-5.899138e-02
@@ -176,7 +176,7 @@ Tankdf$DateTime<-as.character(as.POSIXct(Tankdf$DateTime, format="%m/%d/%y %H:%M
 
 ```
 
-Separate settlement and survival phases and assign temperature treatment names for the settlement (ambient only) and recruit survival phases (high and ambient).  
+Separate settlement and survival phases and assign temperature treatment names for the settlement (ambient only) and spat survival phases (high and ambient).  
 
 ```{r}
 settlement_temps<-Tankdf%>%
@@ -216,9 +216,9 @@ settlement_temps%>%group_by(Treatment)%>%summarise(mean=mean(Temp), sd=sd(Temp),
 ```
 
 
-## Recruit survival
+## Spat survival
 
-Plot temperatures during recruit survival and calculate mean values.  
+Plot temperatures during spat survival and calculate mean values.  
 ```{r}
 recruit_plot<-ggplot(survival_temps)+geom_point(aes(as.POSIXct(DateTime),Temp,color=Treatment),alpha=0.3,size=1)+
      theme_classic()+

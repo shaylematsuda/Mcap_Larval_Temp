@@ -131,7 +131,7 @@ LarvalSurvPlot<-ggplot(data=larvae_surv_table, aes(x=Day, y=mean, colour=Treatme
   theme(plot.margin = margin(1, 0.1, 0, 0.1, "cm")) +
   ylab(expression(bold(paste("Larval Survival (%)")))) + 
   geom_text(x=1.5, y=10, label="p(Larval Treatment x Day)=0.009", size=6, color="black") +
-  geom_text(x=3.95, y=83, label="*", size=10, color="darkblue") + #day4 cool
+  geom_text(x=3.95, y=0, label="*", size=10, color="darkblue") + #day4 cool
   xlab(expression(bold("Days")));LarvalSurvPlot 
 ```
 
@@ -213,7 +213,7 @@ LarvalSettlePlot<-ggplot(data=larval_settle_table, aes(x=Day, y=mean, colour=Tre
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), 
                 width=0.0, size=1, position=position_dodge(0.2), linetype=1)+ 
   theme_classic()+ 
-  ylim(0,100)+
+  ylim(-5,100)+
   theme(text = element_text(size = 18, color="black"))+ 
   theme(axis.text = element_text(size = 18, color="black"))+ 
   theme(legend.text = element_text(size = 18, color="black"))+ 
@@ -223,12 +223,12 @@ LarvalSettlePlot<-ggplot(data=larval_settle_table, aes(x=Day, y=mean, colour=Tre
   theme(plot.margin = margin(1, 0.1, 0, 0.1, "cm")) +
   ylab(expression(bold(paste("Larvae Settled (%)")))) + 
   geom_text(x=4, y=75, label="p(Larval Treatment x Day)<0.001", size=6, color="black") + #obtained from analysis below  
-  geom_text(x=1.05, y=27, label="**", size=10, color="red") + #day1 high
-  geom_text(x=1.05, y=23, label="*", size=10, color="darkblue") + #day1 cool
-  geom_text(x=2.05, y=22, label="**", size=10, color="red") + #day2 high
-  geom_text(x=2.05, y=19, label="*", size=10, color="darkblue") + #day2 high
-  geom_text(x=3.05, y=29, label="**", size=10, color="red") + #day3 high
-  geom_text(x=3.05, y=25, label="**", size=10, color="darkblue") + #day3 cool
+  geom_text(x=1.05, y=18, label="**", size=10, color="red") + #day1 high
+  geom_text(x=1.05, y=-6, label="*", size=10, color="darkblue") + #day1 cool
+  geom_text(x=2.05, y=19, label="**", size=10, color="red") + #day2 high
+  geom_text(x=2.05, y=-4, label="*", size=10, color="darkblue") + #day2 high
+  geom_text(x=3.05, y=26, label="**", size=10, color="red") + #day3 high
+  geom_text(x=3.05, y=-4, label="**", size=10, color="darkblue") + #day3 cool
   geom_text(x=6.05, y=30, label="**", size=10, color="red") + #day6 high
   xlab(expression(bold("Days"))); LarvalSettlePlot 
 ```

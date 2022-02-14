@@ -13,7 +13,7 @@ Experiment testing on the effects of temperature conditioning on *M. capitata* l
 
 This respository contains data and analyses for experimental temperature treatments, larval survival, larval settlement, and recruit survival. 
 
-Respository contains .rmd files for analyses in R, data, output, and figure folders. 
+Repository contains .rmd files for analyses in R, data, output, and figure folders. 
 
 All analyses run from R project.  
 

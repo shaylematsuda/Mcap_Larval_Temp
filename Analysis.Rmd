@@ -1,7 +1,7 @@
 ---
-title: "Analysis of Larval and Spat Responses"
-author: "Ariana S Huffmyer"
-date: "11/30/2021"
+title: "Analysis of larval and spat responses"
+author: "Ariana S Huffmyer and Shayle B Matsuda"
+date: "02/14/2022"
 output:
   html_document:
     toc: yes
@@ -13,6 +13,8 @@ editor_options:
 Data analysis for Alexander et al., "Larval thermal conditioning does not improve post-settlement thermal tolerance in the dominant reef-building coral, *Montipora capitata*".    
 
 # Set Up  
+
+Load required libraries.  
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 
@@ -45,7 +47,7 @@ larvae$perML<-larvae$Larvae/larvae$Volume #calculate larval concentration as lar
 larvae$total<-larvae$perML*larvae$ConicalVol #calculate total number of larvae by multiplying conical volume by larval concentration
 ```
 
-Calculate percent change in larval concentration relative to starting concentration at each subsequent timepoint: (larvae end - larvae start) / larvae start  
+Calculate percent change in larval concentration relative to starting concentration at each subsequent time point: (larvae end - larvae start) / larvae start  
 
 Due to this method, it is possible for survival values to be >100%, due to variation in larval concentration samples.  
 
@@ -79,7 +81,7 @@ larvae_surv_table <- plyr::ddply(z, c("Treatment", "Day"), summarise,
 larvae_surv_table 
 ```
 
-Analyze larval density over time between treatments with a linear mixed model with concical nested within treatment as a random effect due to repeated measures.  
+Analyze larval density over time between treatments with a linear mixed model with conical nested within treatment as a random effect due to repeated measures.  
 
 Build model: `lmer(prop_change~Treatment + Day  + Treatment:Day + (1|Treatment:Conical), data=z)`
 ```{r}
@@ -87,22 +89,22 @@ z$Day<-as.factor(as.character(z$Day))
 model1<-lmer(prop_change~Treatment + Day  + Treatment:Day + (1|Treatment:Conical), data=z) #model
 ```
 
-View summary and significance of model through a Type II ANOVA analysis.  
+View summary and significance of main effects through a Type II ANOVA analysis.  
 ```{r}
 summary(model1) #summary of model
 anova(model1, type="II") #anova of model
 ```
 
-Day and Treatment * Day are significant.  
+Day and Treatment:Day are significant.  
 
-Check residual asssumptions for the model.  
+Check residual assumptions for the model.  
 ```{r}
 hist(residuals(model1)) 
 qqPlot(residuals(model1)) 
 leveneTest(residuals(model1)~Treatment * as.factor(Day), data=z) #passes
 ```
 
-Conduct posthoc examination of model.  
+Conduct Tukey posthoc test of model.  
 ```{r}
 posthoc1<-emmeans(model1, ~Treatment|Day, adjust="Tukey") #examine posthoc comparisons for each day across treatments
 cld(posthoc1)
@@ -154,7 +156,7 @@ total_settle$Tank<-settle$Tank[match(total_settle$Chamber, settle$Chamber)]
 total_settle$Treatment<-settle$Treatment[match(total_settle$Chamber, settle$Chamber)]
 total_settle$Starting.Larvae<-settle$Starting.Larvae[match(total_settle$Chamber, settle$Chamber)]
 
-#calculate proportion setted in each chamber
+#calculate proportion settled in each chamber
 total_settle$propSettled<-total_settle$total/total_settle$Starting.Larvae
 total_settle$propAggregate<-total_settle$aggregate/total_settle$total
 ```
@@ -182,7 +184,7 @@ total_settle$Day<-as.factor(as.character(total_settle$Day))
 model2<-glmer(total ~ Treatment + Day  + Treatment:Day + (1|Tank/Chamber), data=total_settle, family=poisson) 
 ```
 
-View model summary and significance using a Type II ANOVA analysis.  
+View model summary and significance of main effects using a Type II ANOVA analysis.  
 ```{r}
 summary(model2) 
 Anova(model2, type=2)
@@ -194,7 +196,7 @@ qqPlot(residuals(model2))
 hist(residuals(model2)) 
 ```
 
-Conduct posthoc analyses to look for pairwise differences in settlement between treatments at each day.  
+Conduct Tukey posthoc analyses to look for pairwise differences in settlement between treatments at each day.  
 ```{r}
 posthoc2<-emmeans(model2, ~Treatment|Day, adjust="Tukey")
 cld(posthoc2)
@@ -235,7 +237,7 @@ LarvalSettlePlot<-ggplot(data=larval_settle_table, aes(x=Day, y=mean, colour=Tre
 
 # Spat survival  
  
-Load data for spat survival. Calculate percent spat survival as the number of spat alive at each timepoint divided by the number of spat alive at the start of the experiment. 
+Load data for spat survival. Calculate percent spat survival as the number of spat alive at each time point divided by the number of spat alive at the start of the experiment. 
 
 In this analysis, the number of spat alive at each time point is recorded as the number of "successes". The number of larvae that died are "failures". Recruits are tracked by "plug ID". Note that spat are referred to as "recruits" in the code, but spat is used in revised manuscript.   
 ```{r}
@@ -289,13 +291,13 @@ model3<-glmer(y~Juv.Treatment * Larval.Treatment * Days + (1|Tank/Plug.ID), fami
 detach(recruits)
 ```
 
-View summary of model and significance with a Type II ANOVA analysis.  
+View summary of model and significance of main effects with a Type II ANOVA analysis.  
 ```{r}
 summary(model3) 
 Anova(model3, type=2)
 ```
 
-Run posthoc analysis to look at differences between spat treatments for each day because day*spat treatment was significant, with no effect of larval treatment.  
+Run Tukey posthoc analysis to look at differences between spat treatments for each day because day*spat treatment was significant, with no effect of larval treatment.  
 ```{r}
 posthoc3<-emmeans(model3, ~Juv.Treatment|Days, adjust="Tukey")
 cld(posthoc3)
@@ -366,7 +368,7 @@ agg_ind<-agg_ind%>%
   filter(prop_agg<0.5)
 ```
 
-Test for differences in aggregation by treatments.  
+Test for differences in aggregation by treatments with an ANOVA.    
 ```{r}
 summary(aov(prop_agg~Juv.Treatment*Larval.Treatment, data=agg_ind))
 ```
@@ -385,14 +387,14 @@ model4<-glmer(y~Juv.Treatment * Larval.Treatment * Days + (1|Tank/Plug.ID) + (1|
 detach(agg_ind)
 ```
 
-View summary of model and significance with a Type II ANOVA analysis.  
+View summary of model and significance of main effects with a Type II ANOVA analysis.  
 ```{r}
 summary(model4) 
 Anova(model4, type=2)
 ```
-Results show the same significant effects as the previous model - spat treatment and day interaction is significant.  
+Results show the same significant effects as the previous model - spat treatment and day interaction is significant. This analysis accounts for variation in settlement behavior.   
 
-Examine posthoc differences between spat treatments at each day.  
+Examine Tukey posthoc differences between spat treatments at each day.  
 ```{r}
 posthoc4<-emmeans(model4, ~Juv.Treatment|Days, adjust="Tukey")
 cld(posthoc4)
@@ -404,7 +406,7 @@ Examine dispersion assumption.
 dispersion_glmer(model4) #no evidence of overdispersion as value is <1.4
 ```
 
-Graph proportion survival over time in spat   
+Graph proportion survival over time in spat.     
 ```{r}
 RecruitSurvPlot<-ggplot(data=recruit_surv_table, aes(x=Days, y=mean, shape=Juv.Treatment, linetype=Juv.Treatment, colour=Larval.Treatment, group=interaction(Juv.Treatment, Larval.Treatment))) + 
   scale_colour_manual(name="Larval Treatment",

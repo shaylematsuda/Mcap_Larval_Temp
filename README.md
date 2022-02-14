@@ -1,12 +1,13 @@
 # Data and analyses to accompany the manuscript: "Larval thermal conditioning does not improve post-settlement thermal tolerance in the dominant reef-building coral, *Montipora capitata*"
 
-### Authors: G. Alexander, J. Hancock, *A.S. Huffmyer, *S.B. Matsuda
+### Authors: G. Alexander, J. Hancock, *A.S. Huffmyer, S.B. Matsuda
 
 ### Journal: Coral Reefs
 
-*Corresponding authors:   
+*Corresponding author:   
 AS Huffmyer (ashuffmyer@gmail.com)  
-SB Matsuda (shaylematsuda@gmail.com)  
+
+*SB Matsuda and AS Huffmyer contributed equally and are co-senior authors.*  
 
 Experiment testing on the effects of temperature conditioning on *M. capitata* larval survivorship, settlement and performance under elevated temperature. 
 
@@ -16,13 +17,15 @@ Respository contains .rmd files for analyses in R, data, output, and figure fold
 
 All analyses run from R project.  
 
+R scripts and analyses written by AS Huffmyer and SB Matsuda.  
+
 # Description of repository    
 
 **Scripts:**   
-`Analysis.Rmd`: Markdown script to analyze larval survival, larval settlement, and recruit survival.   
-`Temperature_analysis.Rmd`: Markdown script to analyze and plot temperature treatments.     
+`Analysis.Rmd`: R Markdown script to analyze larval survival, larval settlement, and recruit survival.   
+`Temperature_analysis.Rmd`: R Markdown script to analyze and plot temperature treatments.     
 
-Scripts will output `.html` files if `knit` is executed.  
+Scripts will output `.html` files if `knit` is executed from project directory.    
 
 **Data Folder:**  
 `surv_larvae.csv`: Data for larval survival. Data includes date of measurement (Date), day of experiment (Day), conical tank numer (Conical), treatment (Treatment; C=Cold; A=Ambient), number of larvae (Larvae), volume of sample (Volume; mL), sample replicate (Sample), and total volume of conical (ConicalVol; mL).  
